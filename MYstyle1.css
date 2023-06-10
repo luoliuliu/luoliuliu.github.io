@@ -1,0 +1,25 @@
+body{
+  background-image: url("Pic/back.png");
+  background-size:100% 100%;
+}
+
+html, body{
+  color: #222;
+}
+
+.navbar-brand img{
+  width:69px;
+  height:40px;
+}
+
+.nav-item{
+  padding:0.3rem;
+}
+
+.card:hover{
+  transform: scale(1.05,1.05);
+}
+
+.profile img:hover{
+  transform: scale(1.1,1.1);
+}
