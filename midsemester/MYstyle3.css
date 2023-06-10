@@ -1,0 +1,32 @@
+body{
+  background-image: url("Pic/back.png");
+  background-size:100% 100%;
+}
+
+html, body{
+  color: #222;
+}
+
+.navbar-brand img{
+  width:69px;
+  height:40px;
+}
+
+.nav-item{
+  padding:0.3rem;
+}
+
+.carousel-item img{
+  height:100%;
+  width:100%
+}
+
+.col-md-4 img{
+  width:300px;
+  height:250px;
+  align:center;
+}
+
+.col-md-4 img:hover{
+  transform: scale(1.2,1.2);
+}
