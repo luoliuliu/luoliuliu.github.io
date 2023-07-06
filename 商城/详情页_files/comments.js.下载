@@ -1,0 +1,386 @@
+function checkCommentForm(obj){
+    if(top!=self){
+        top.jAlert("编辑状态下不能提交，请在预览模式下使用！");
+        return false;
+    }
+    var form = jQuery(obj);
+    var text1 = form.attr("data-text_7")?form.attr("data-text_7"):"请认真填写评价内容，字数不得少于10个字。";
+    var text2 = form.attr("data-text_9")?form.attr("data-text_9"):"请填写必填项目。";
+    var text3 = form.attr("data-text_10")?form.attr("data-text_10"):"请输入有效的地址邮件。";
+    var text4 = form.attr("data-text_11")?form.attr("data-text_11"):"提交成功";
+    var text5 = form.attr("data-button_texting")?form.attr("data-button_texting"):"提交中";
+
+
+    var comment = jQuery.trim(form.find("#comment").val());
+    if(comment.length <10 ){
+        if(top!=self){top.jAlert(text1)}else{ alert(text1)};
+        return false;
+    }
+    if(form.find("#author[aria-required='true']").length>0){
+        var author = jQuery.trim(form.find("#author[aria-required='true']").val());
+        if(author=="" ){
+            if(top!=self){top.jAlert(text2)}else{ alert(text2)};
+            return false;
+        }
+        var reg = /^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z0-9]+$/;
+        var email = jQuery.trim(form.find("#email[aria-required='true']").val());
+        if(email=="" ){
+            if(top!=self){top.jAlert(text2)}else{ alert(text2)};
+            return false;
+        }else if(!reg.test(email)){
+            if(top!=self){top.jAlert(text3)}else{ alert(text3)};
+            return false;
+        }
+    }
+    var url  = form.attr("action");
+    var old_submit_text = form.find("#submit").val();
+    if(form.find("#submit").val()==text5+"..."){
+        return false;
+    }
+    form.find("#comment_parent").val(0);
+    form.find("#hide_content").remove();
+    form.find("#submit").val(text5+"...");
+    var p = form.closest(".qfy-comments");
+    var pp = p.parent();
+    if(form.find("[name='type']").val()=="nomarl"){
+        if(form.find("#short_atts").length==0){
+            form.prepend("<input type='hidden' name='short_atts'  id='short_atts' value='"+jQuery(obj).closest(".qfy-comments").attr("data-atts")+"' />");
+        }else{
+            form.find("#short_atts").val(jQuery(obj).closest(".qfy-comments").attr("data-atts"));
+        }
+    }
+    jQuery.ajax({
+        type: "POST",
+        url:url,
+        data:form.serialize(),
+        error: function(request) {
+            if(top!=self){top.jAlert("连接异常。")}else{alert("连接异常");};
+            form.find("#submit").val(old_submit_text);
+        },
+        success: function(data) {
+            if(data.indexOf("success")>-1){
+                if(form.closest(".qfy-comments").length>0){
+                    form.find("#submit").val(text4);
+                    var tmp = data.split('|<result>|');
+                    p.replaceWith(tmp[1]);
+                    pp.find(".commentlist").show();
+                    var success_htm = '<div style="text-align:center;" ><img class="qfy_pop_checkedimg" src="/FeiEditor/images/bitcms/check.png" style="margin-top:20px;margin-bottom:20px;" /><div style="padding-bottom:20px;">'+text4+'</div></div>';
+                    qfy_popinfo_fun(success_htm,2);
+                }else{
+                    var success_htm = '<div style="text-align:center;" ><img class="qfy_pop_checkedimg" src="/FeiEditor/images/bitcms/check.png" style="margin-top:20px;margin-bottom:20px;" /><div style="padding-bottom:20px;">'+text4+'</div></div>';
+                    qfy_popinfo_fun(success_htm,2);
+                    setTimeout(function(){
+                        location.reload();
+                    },3000)
+                }
+            }else{
+                if( form.attr("data-text_12")){
+                    if(data=="对不起，你已经提交过评论啦。该商品或页面你只能评价一次！"){
+                        data = form.attr("data-text_12");
+                    }
+                }else if( form.attr("data-text_13")){
+                    if(data=="禁止回复，超过条数限制..."){
+                        data = form.attr("data-text_13");
+                    }
+                }
+                if(top!=self){top.jAlert(data)}else{alert(data);};
+                form.find("#submit").val(old_submit_text);
+            }
+
+        }
+    });
+    return false;
+}
+function response_comment(obj){
+    var p = jQuery(obj).parent();
+    jQuery(obj).closest(".comment").find(".response_comment"+p.attr("data-id")).show();
+    p.find(".response_comment_span").hide();
+    p.find(".response_comment_tosave").show();
+    p.find(".response_comment_tocancel").show();
+}
+function response_comment_edit(obj){
+    var p = jQuery(obj).closest(".comment-body");
+    var v = jQuery.trim(p.find(">.content").html());
+    var id = p.attr("data-id");
+    var status =  p.attr("data-status");
+    var t1 = jQuery(obj).attr("data-text_4")?jQuery(obj).attr("data-text_4"):"已审核";
+    var t2 = jQuery(obj).attr("data-text_5")?jQuery(obj).attr("data-text_5"):"待审";
+    var t3 = jQuery(obj).attr("data-text_6")?jQuery(obj).attr("data-text_6"):"垃圾评论";
+    var t4 = jQuery(obj).attr("data-text_2")?jQuery(obj).attr("data-text_2"):"关闭";
+    var t5 = jQuery(obj).attr("data-button_text")?jQuery(obj).attr("data-button_text"):"保存";
+
+    var border_color = jQuery(obj).attr("data-border_color")?jQuery(obj).attr("data-border_color"):"#F4F4F4";
+    var button_bg_color = jQuery(obj).attr("data-button_bg_color")?jQuery(obj).attr("data-button_bg_color"):"#555555";
+    var button_text_color = jQuery(obj).attr("data-button_text_color")?jQuery(obj).attr("data-button_text_color"):"#ffffff";
+    var button_bar_bg_color = jQuery(obj).attr("data-button_bar_bg_color")?jQuery(obj).attr("data-button_bar_bg_color"):"#FCFBF9";
+
+    p.find(">.content").hide();
+    p.find(".reply.commentmetadata").hide();
+    if(p.find(".edit_comment").length==0){
+        var str ='<div class="edit_comment commentmetadata edit_comment'
+            +id+'"><div style="border: 2px solid '
+            + border_color +';"><textarea name="comment"  style="color: rgb(64, 64, 64);font-size:14px;width:100%;border: 0 none; overflow-x: hidden;overflow-y: auto;resize: none; height: 80px;line-height: 20px;" id="editcontent'
+            +id+'" cols="58" rows="10" tabindex="4">'+v+'</textarea><div style="background-color: '
+            + button_bar_bg_color +'; text-align: right;"><label class="approved" style="font-weight:400px;font-size:12px;margin-right:5px;cursor:pointer;" ><input type="radio" value="1" name="comment_status" >'
+            +t1+'</label><label class="waiting" style="font-weight:400px;font-size:12px;margin-right:5px;cursor:pointer;" ><input type="radio" value="0" name="comment_status">'+t2+'</label><label class="spam" style="font-weight:400px;font-size:12px;margin-right:5px;cursor:pointer;" ><input type="radio" value="spam" name="comment_status">'
+            +t3+'</label>&nbsp;&nbsp;&nbsp;&nbsp;<input type="button" name="submit" style="border:none;padding: 5px 10px; background-color: '
+            + button_bg_color +'; color: '+ button_text_color +';font-size:14px;" class="response_comment_toedit" id="submit" tabindex="5" value="'
+            +t5+'" onclick="response_comment_toedit(this)">&nbsp;&nbsp;<input type="button" onclick="response_comment_tocancel3(this)" name="cancel" style="font-size:14px;border:none;padding:5px 10px;background-color:#ccc;color:#fff;" id="cancel" tabindex="5" value="'
+            +t4+'"></div></div></div>';
+        p.append(str);
+    }else{
+        p.find(".edit_comment").show();
+    }
+
+    p.find(".edit_comment"+id+" [name='comment_status'][value="+status+"]").attr("checked",true);
+}
+function response_comment_tocancel(obj){
+    var p = jQuery(obj).parent();
+    jQuery(obj).closest(".comment").find(".response_comment"+p.attr("data-id")).hide();
+    p.find(".response_comment_span").show();
+    p.find(".response_comment_tosave").hide();
+    p.find(".response_comment_tocancel").hide();
+}
+function response_comment_tocancel2(obj){
+    var p = jQuery(obj).closest(".comment").find(".reply.commentmetadata");
+    jQuery(obj).closest(".comment").find(".response_comment"+p.attr("data-id")).hide();
+    p.find(".response_comment_span").show();
+    p.find(".response_comment_tosave").hide();
+    p.find(".response_comment_tocancel").hide();
+}
+function response_comment_tocancel3(obj){
+    var p = jQuery(obj).closest(".comment-body");
+    p.find(">.content").show();
+    p.find(".edit_comment.commentmetadata").hide();
+    p.find(".reply.commentmetadata").show();
+}
+function response_comment_toedit(obj){
+    var	p =jQuery(obj).closest(".comment-body");
+    var pp = jQuery(obj).closest(".qfy-comments").parent();
+    var id = p.attr("data-id");
+    var comment = p.find("#editcontent"+id).val();
+    var dp = p.attr("data-parent");
+
+    if(comment.length <10 ){
+        if(top!=self){top.jAlert("请认真填写评价内容，字数不得少于10个字。")}else{ alert("请认真填写评价内容，字数不得少于10个字。")};
+        return false;
+    }
+    var form =jQuery(obj).closest(".qfy-comments").find("form#commentform");
+    var url  =form.attr("action");
+    form.find("#comment_parent").val(dp);
+    if(form.find("#comment_approved").length==0){
+        form.append('<input type="hidden" value="0" id="comment_approved" name="comment_approved">');
+    }
+    form.find("#comment_approved").val(p.find(".edit_comment"+id+" [name='comment_status']:checked").val());
+    if(form.find("#hide_content").length==0){
+        form.prepend("<input type='hidden' name='hide_content'  id='hide_content' value='"+comment+"' />");
+    }else{
+        form.find("#hide_content").val(comment);
+    }
+    if(form.find("#comment_ID").length==0){
+        form.prepend("<input type='hidden' name='comment_ID'  id='comment_ID' value='"+id+"' />");
+    }else{
+        form.find("#comment_ID").val(id);
+    }
+    if(p.find(".response_comment_toedit").val()!=p.attr("data-btntext")){
+        return false;
+    }
+    if(form.find("#short_atts").length==0){
+        form.prepend("<input type='hidden' name='short_atts'  id='short_atts' value='"+jQuery(obj).closest(".qfy-comments").attr("data-atts")+"' />");
+    }else{
+        form.find("#short_atts").val(jQuery(obj).closest(".qfy-comments").attr("data-atts"));
+    }
+    p.find(".response_comment_toedit").val(p.attr("data-btntexting")+"...");
+    //....
+    jQuery.ajax({
+        type: "POST",
+        url:url,
+        data:form.serialize(),
+        error: function(request) {
+            if(top!=self){top.jAlert("连接异常。")}else{alert("连接异常");};
+            p.find(".response_comment_toedit").val(p.attr("data-btntext"));
+            form.find("#comment_ID").remove();
+            form.find("#comment_approved").remove();
+        },
+        success: function(data) {
+            if(data.indexOf("success")>-1){
+                p.find(".response_comment_toedit").val(p.attr("data-btntext"));
+                var tmp = data.split('|<result>|');
+                form.closest(".qfy-comments").replaceWith(tmp[1]);
+                pp.find(".commentlist").show();
+
+            }else{
+                p.find(".response_comment_toedit").val(p.attr("data-btntext"));
+                form.find("#comment_ID").remove();
+                form.find("#comment_approved").remove();
+                if(top!=self){top.jAlert(data)}else{alert(data);};
+
+            }
+        }
+    });
+}
+function commentSort(obj,order){
+    var p = jQuery(obj).closest(".qfy-comments");
+    var pp = p.parent();
+    var form =p.find("form#commentform");
+    var comment_post_ID = form.find("#comment_post_ID").val();
+
+    var url  = form.attr("action");
+
+    var newsest_text = p.find("#commentmenu.nav-menu-left li:first a").html();
+    var oldest_text = p.find("#commentmenu.nav-menu-left li:last a").html();
+    p.css("opacity","0.5");
+    jQuery.post(url,{action:"search",comment_post_ID:comment_post_ID,reverse_top_level:order,short_atts:p.attr("data-atts")},function(data){
+        if(data.indexOf("success")>-1){
+            var tmp = data.split('|<result>|');
+            p.replaceWith(tmp[1]);
+            pp.find(".commentlist").show();
+            if(order==0){
+                p.find(".comment-nav-left b").html(newsest_text);
+            }else{
+                p.find(".comment-nav-left b").html(oldest_text);
+            }
+        }
+        p.css("opacity","1");
+    })
+}
+function next_comment_page(obj,pageid){
+    var p = jQuery(obj).closest(".qfy-comments");
+    var form =p.find("form#commentform");
+    var comment_post_ID = form.find("#comment_post_ID").val();
+    var url  = form.attr("action");
+    p.css("opacity","0.5");
+    jQuery.post(url+"?cpage="+pageid,{action:"search",comment_post_ID:comment_post_ID,short_atts:p.attr("data-atts")},function(data){
+        if(data.indexOf("success")>-1){
+            var tmp = data.split('|<result>|');
+            var t = jQuery(tmp[1]).find(".commentlist").html();
+            var load = jQuery(tmp[1]).find(".loadmore_inner").html();
+            p.find(".commentlist").append(t);
+            if(load){
+                p.find(".loadmore_inner").html(load);
+            }else{
+                p.find(".loadmore_inner").remove();
+            }
+            p.css("opacity","1");
+
+        }
+    })
+
+}
+function removecomment(obj,id){
+    var confirmtext = jQuery(obj).attr("data-text");
+    if(confirm( confirmtext )){
+        var p = jQuery(obj).closest(".qfy-comments");
+        var pp = p.parent();
+        var form =p.find("form#commentform");
+        var comment_post_ID = form.find("#comment_post_ID").val();
+        var url  = form.attr("action");
+        p.find("#div-comment-"+id).css("opacity","0.5");
+        jQuery.post(url,{action:"trash",comment_id:id,comment_post_ID:comment_post_ID,short_atts:p.attr("data-atts")},function(data){
+            if(data.indexOf("success")>-1){
+                var tmp = data.split('|<result>|');
+                p.replaceWith(tmp[1]);
+                pp.find(".commentlist").show();
+            }else{
+                p.find("#div-comment-"+id).css("opacity","1");
+                alert(data);
+            }
+        })
+    }
+}
+function response_comment_tosave(obj){
+    //商品和普通评论，不一样的结构
+    var p = jQuery(obj).parent();
+    var pp = jQuery(obj).closest(".qfy-comments").parent();
+    var id = p.attr("data-id");
+    var product = true;
+
+
+
+    if(!id){
+        //普通
+        p =jQuery(obj).closest(".reply.commentmetadata");
+        id = p.attr("data-id");
+        product = false;
+        var form = jQuery(obj).closest(".qfy-comments").find("form#commentform");
+        if(form.find("#short_atts").length==0){
+            form.prepend("<input type='hidden' name='short_atts'  id='short_atts' value='"+jQuery(obj).closest(".qfy-comments").attr("data-atts")+"' />");
+        }else{
+            form.find("#short_atts").val(jQuery(obj).closest(".qfy-comments").attr("data-atts"));
+        }
+        var old_submit_text = p.find(".response_comment_tosave").val();
+    }else{
+        var form = jQuery(obj).closest("#tab-reviews").find("form#commentform");
+
+        var old_submit_text = form.find(".response_comment_tosave").val();
+    }
+    var text1 = form.attr("data-text_7")?form.attr("data-text_7"):"请认真填写评价内容，字数不得少于10个字。";
+    var text2 = form.attr("data-text_9")?form.attr("data-text_9"):"请填写必填项目。";
+    var text3 = form.attr("data-text_10")?form.attr("data-text_10"):"请输入有效的地址邮件。";
+    var text4 = form.attr("data-text_11")?form.attr("data-text_11"):"提交成功";
+    var text5 = form.attr("data-button_texting")?form.attr("data-button_texting"):"提交中";
+
+    if(p.find("#replycontent"+id).length>0){
+        var comment = p.find("#replycontent"+id).val();
+    }else{
+        var comment = jQuery("#replycontent"+id).val();
+    }
+    if(comment.length <10 ){
+        if(top!=self){top.jAlert(text1)}else{ alert(text1)};
+        return false;
+    }
+
+    var url  = form.attr("action");
+    form.find("#comment_parent").val(id);
+    if(form.find("#hide_content").length==0){
+        form.prepend("<input type='hidden' name='hide_content'  id='hide_content' value='"+comment+"' />");
+    }else{
+        form.find("#hide_content").val(comment);
+    }
+
+
+    if(p.find(".response_comment_tosave").html()==(text5+"...") || p.find(".response_comment_tosave").val()==(text5+"...") ){
+        return false;
+    }
+    if(product){
+        p.find(".response_comment_tosave").html(text5+"...");
+    }else{
+        p.find(".response_comment_tosave").val(text5+"...");
+    }
+    p.find(".response_comment_tocancel").hide();
+    //....
+    jQuery.ajax({
+        type: "POST",
+        url:url,
+        data:form.serialize(),
+        error: function(request) {
+            if(top!=self){ console.log("error") };
+            form.find(".response_comment"+p.attr("data-id")).hide();
+            p.find(".response_comment_span").show();
+
+            p.find(".response_comment_tosave").hide().val(old_submit_text);
+
+        },
+        success: function(data) {
+
+            if(data.indexOf("success")>-1){
+                if(form.closest(".qfy-comments").length>0){
+                    p.find(".response_comment_tosave").val(text4);
+                    var tmp = data.split('|<result>|');
+                    form.closest(".qfy-comments").replaceWith(tmp[1]);
+                    pp.find(".commentlist").show();
+                }else{
+                    if(top!=self){top.jAlert(text4)}else{alert(text4);};
+                    location.reload();
+                }
+            }else{
+                if(top!=self){top.jAlert(data)}else{alert(data);};
+                form.find(".response_comment"+p.attr("data-id")).hide();
+                p.find(".response_comment_span").show();
+                p.find(".response_comment_tosave").val(old_submit_text);
+
+            }
+        }
+    });
+}
+
