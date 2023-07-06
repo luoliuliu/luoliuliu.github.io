@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="./style.css">
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.js"></script>
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.1.29/c3.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.1.29/c3.css" rel="stylesheet" type="text/css">
 
 
@@ -301,48 +302,51 @@
       <h2>网站浏览情况</h2>
       <p>每天有多少人停留在这里呢？这里就有答案。</p>
     </div>
-    <div id="chart3"></div>
+    <canvas id="myChart" width="1100" height="300"></canvas>
 
-
-    <script>
-
-
-    var chart3 = c3.generate({
-      bindto:'#chart3',
-      data:{
-        columns:[
-        ['近五日每日访客量',1000,900,950,1050,800,960],
-        ['近五日每日上传作品量',230,180,200,250,150,220]
-      ],
-      types:{
-        sample:'area',
-        sample2:'area-spline'
-      },
-      colors:{
-        sample:'hotpink',
-        sample2:'pink'
-      },
-      size:{
-        height:400,
-        width:1100
-      },
-
-      axis:{
-        x:{
-          label:'天数'
-        },
-        y:{
-          label:'Y Label'
-        }
-      }
+  <script>
+    // 绘制折线图
+    const data = {
+        labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+        datasets: [
+    {
+      label: 'Dataset 1',
+      data: [10, 20, 30, 40, 50, 60],
+      fill: false,
+      borderColor: 'rgba(255, 99, 132, 1)',
+      tension: 0.4
+    },
+    {
+      label: 'Dataset 2',
+      data: [20, 30, 40, 50, 40, 30],
+      fill: false,
+      borderColor: 'rgba(54, 162, 235, 1)',
+      tension: 0.4
     }
-    
-    });
-
-
-
-
-    </script>
+  ]
+      };
+      
+      const config = {
+        type: 'line',
+        data: data,
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'top' // 图例位置设置为右上角
+            },
+            title:{
+                display: true,
+                text: "借书"
+            }
+          },
+          
+        }
+      };
+      
+      const myChart = new Chart(document.getElementById('myChart'), config);
+      
+  </script>
   </div>
 </section>
 
