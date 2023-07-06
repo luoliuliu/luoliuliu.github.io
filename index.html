@@ -307,18 +307,18 @@
   <script>
     // 绘制折线图
     const data = {
-        labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+        labels: ['7/1', '7/2', '7/3', '7/4', '7/5','7/6'],
         datasets: [
     {
-      label: 'Dataset 1',
-      data: [10, 20, 30, 40, 50, 60],
+      label: '近六日每日访客量',
+      data: [1000,900,950,1050,800,960],
       fill: false,
       borderColor: 'rgba(255, 99, 132, 1)',
       tension: 0.4
     },
     {
-      label: 'Dataset 2',
-      data: [20, 30, 40, 50, 40, 30],
+      label: '近六日每日上传作品量',
+      data: [230,180,200,250,150,220],
       fill: false,
       borderColor: 'rgba(54, 162, 235, 1)',
       tension: 0.4
@@ -337,7 +337,7 @@
             },
             title:{
                 display: true,
-                text: "借书"
+                text: "网站数据概况"
             }
           },
           
